@@ -3,7 +3,7 @@ Name:    dnschanger
 Version: %{ver}
 Release: 1%{?dist}
 Summary: Application KDE pour changer les DNS sans redémarrage (Rust + Qt6)
-License: MIT
+License: GPLv3
 URL:     https://github.com/doudou00666/dnschanger
 Source:  %{name}-%{version}.tar.gz
 

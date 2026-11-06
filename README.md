@@ -48,4 +48,4 @@ rpmbuild -D 'dist ' rpm/dnschanger.spec   # le tarball doit correspondre au Sour
 
 ## Licence
 
-MIT (le code est libre de redistribution).
+GPL-3.0 (voir `LICENSE`).
