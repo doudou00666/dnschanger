@@ -7,7 +7,7 @@ License: MIT
 URL:     https://github.com/doudou00666/dnschanger
 Source:  %{name}-%{version}.tar.gz
 
-BuildRequires: cargo, rust, cmake, ninja, qt6-qtbase-devel
+BuildRequires: cargo, rust, cmake, ninja-build, qt6-qtbase-devel
 Requires:      qt6-qtbase, networkmanager
 
 %description
@@ -33,14 +33,14 @@ popd
 
 %install
 install -D -m755 qt/build/dnschanger \
-    %{buildroot}/%{_localbase}/bin/dnschanger
+    %{buildroot}/usr/bin/dnschanger
 install -D -m644 dnschanger.desktop \
-    %{buildroot}/%{_localbase}/share/applications/dnschanger.desktop
+    %{buildroot}/usr/share/applications/dnschanger.desktop
 
 %files
-%{_localbase}/bin/dnschanger
-%{_localbase}/share/applications/dnschanger.desktop
+/usr/bin/dnschanger
+/usr/share/applications/dnschanger.desktop
 
 %changelog
-* Thu Nov 06 2023 doudou00666 <doudou00666@users.noreply.github.com> - 0.1.0-1
+* Thu Nov 06 2026 doudou00666 <doudou00666@users.noreply.github.com> - 0.1.0-1
 - initial release
