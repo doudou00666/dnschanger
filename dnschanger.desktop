@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Changement DNS
+Name[fr]=Changement DNS
+Comment=DNS changer for KDE (Rust + Qt6)
+Comment[fr]=Changer les DNS de la connexion active sans redémarrage
+Exec=dnschanger
+Icon=network-dns-server
+StartupNotify=true
+Categories=Network;System;

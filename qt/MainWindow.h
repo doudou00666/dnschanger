@@ -1,0 +1,33 @@
+// MainWindow.h
+#pragma once
+#include <QMainWindow>
+#include <QListWidget>
+#include <QLabel>
+#include <QPushButton>
+#include <QVBoxLayout>
+#include <QStatusBar>
+
+extern "C" {
+    extern uint32_t       dnslib_count();
+    extern const char*    dnslib_name(uint32_t);
+    extern const char*    dnslib_tag(uint32_t);
+    extern const char*    dnslib_ip(uint32_t);
+    extern const char*    dnslib_notes(uint32_t);
+    extern int            dnslib_usable(uint32_t);
+    extern void           dnslib_reset_store();
+    extern const char*    dnslib_active_connection();
+    extern const char*    dnslib_current_dns();
+    extern const char*    dnslib_set_dns(uint32_t);
+}
+
+inline QString q(const char* s) {
+    return s ? QString::fromUtf8(s) : QString();
+}
+
+class MainWindow : public QMainWindow
+{
+    Q_OBJECT
+public:
+    MainWindow();
+    ~MainWindow();
+};

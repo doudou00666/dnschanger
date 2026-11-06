@@ -1,0 +1,11 @@
+[package]
+name = "dnslib"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "dnslib"
+crate-type = ["staticlib"]
+
+[profile.release]
+strip = false
