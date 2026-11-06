@@ -8,7 +8,7 @@ URL:     https://github.com/doudou00666/dnschanger
 Source:  %{name}-%{version}.tar.gz
 
 BuildRequires: cargo, rust, cmake, ninja-build, qt6-qtbase-devel
-Requires:      qt6-qtbase, networkmanager
+Requires:      qt6-qtbase, NetworkManager
 
 %description
 Application de bureau (KDE / Plasma) permettant de changer les DNS de la
