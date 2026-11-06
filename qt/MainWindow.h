@@ -5,6 +5,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QLineEdit>
 #include <QStatusBar>
 
 extern "C" {
@@ -17,7 +18,7 @@ extern "C" {
     extern void           dnslib_reset_store();
     extern const char*    dnslib_active_connection();
     extern const char*    dnslib_current_dns();
-    extern const char*    dnslib_set_dns(uint32_t);
+    extern const char*    dnslib_apply_custom(const char* ip_csv);
 }
 
 inline QString q(const char* s) {

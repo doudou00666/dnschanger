@@ -1,4 +1,4 @@
-%global ver 0.1.0
+%global ver 0.1.1
 Name:    dnschanger
 Version: %{ver}
 Release: 1%{?dist}
@@ -42,5 +42,10 @@ install -D -m644 dnschanger.desktop \
 /usr/share/applications/dnschanger.desktop
 
 %changelog
+* Fri Nov 06 2026 doudou00666 <doudou00666@users.noreply.github.com> - 0.1.1-1
+- Sélection multiple de résolveurs avant validation (liste combinée)
+- DNS personnalisés (IPv4/IPv6, liste séparée par des virgules)
+- Validation de la liste d'IP (rejet des tokens invalides)
+- 12 tests unitaires + tests de régression FFI
 * Thu Nov 06 2026 doudou00666 <doudou00666@users.noreply.github.com> - 0.1.0-1
 - initial release

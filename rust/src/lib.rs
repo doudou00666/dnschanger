@@ -1,9 +1,9 @@
 // dnslib — C-ABI FFI library
-//  * Built-in catalogue of alternative DNS resolvers (from sebsauvages's wiki)
+//  * Built-in catalogue of alternative DNS resolvers (from sebsauvage's wiki)
 //  * Change the active connection's DNS (NetworkManager, no reboot required)
-//  * Read/verify the applied DNS
+//  * Apply a custom / combined list of DNS servers (multi-select or manual)
 //
-// The FFI surface is tiny and uses `const char*` (UTF-8) for all data.
+// The FFI surface uses `const char*` (UTF-8) for all data.
 
 use std::ffi::CString;
 use std::os::raw::{c_char, c_int};
@@ -256,7 +256,7 @@ thread_local! {
 }
 
 /// Convert a &str to a stable *const c_char, keeping the CString alive in
-/// thread-local storage.
+// thread-local storage.
 fn store(s: &str) -> *const c_char {
     let c = match CString::new(s) {
         Ok(c) => c,
@@ -265,6 +265,40 @@ fn store(s: &str) -> *const c_char {
     let ptr = c.as_ptr();
     STORE.with(|store| store.borrow_mut().push(c));
     ptr
+}
+
+/// Validate a comma-separated list of DNS servers (IPv4/IPv6).
+/// Returns (ok, valid_list, error_message).
+/// - Splits on commas. Trims whitespace.
+/// - Each token must parse as an IPv4 or IPv6 address.
+/// - Empty input -> error.
+pub fn parse_ip_list(csv: &str) -> (bool, String, String) {
+    let tokens: Vec<&str> = csv.split(',').collect();
+    let mut out: Vec<String> = Vec::new();
+    for t in tokens {
+        let tok = t.trim();
+        if tok.is_empty() {
+            continue; // tolerate trailing commas
+        }
+        if tok.parse::<std::net::Ipv4Addr>().is_ok()
+            || tok.parse::<std::net::Ipv6Addr>().is_ok()
+        {
+            out.push(tok.to_string());
+        } else {
+            return (false, String::new(), format!("'{}' n'est pas une adresse IP valide", tok));
+        }
+    }
+    if out.is_empty() {
+        return (false, String::new(), "aucune adresse IP valide".to_string());
+    }
+    // de-duplicate while preserving order
+    let mut seen: Vec<String> = Vec::new();
+    for s in out.clone() {
+        if !seen.contains(&s) {
+            seen.push(s);
+        }
+    }
+    (true, seen.join(","), String::new())
 }
 
 /// Get the default-route network device name (e.g. `enp1s0`), if any.
@@ -290,9 +324,6 @@ fn default_route_device() -> Option<String> {
 }
 
 /// Best connection currently active. Returns the nmcli connection NAME.
-/// Strategy: find the default-route device, then match the connection whose
-/// DEVICE field equals it (via `nmcli --terse con show`, sep `:`, so names
-/// with spaces work). Falls back to the first non-loopback connection.
 fn active_connection_id() -> Option<String> {
     let out = std::process::Command::new("nmcli")
         .args(["--terse", "con", "show"])
@@ -302,12 +333,9 @@ fn active_connection_id() -> Option<String> {
         return None;
     }
     let s = String::from_utf8(out.stdout).unwrap_or_default();
-    // Each line: NAME:UUID:TYPE:DEVICE
     let mut lines: Vec<&str> = s.lines().collect();
-    // Drop the header line if present (some versions emit it)
     lines.retain(|l| !l.to_lowercase().contains("name"));
 
-    // Preferred: connection matching the default-route device
     if let Some(dev) = default_route_device() {
         for line in &lines {
             let fields: Vec<&str> = line.split(':').collect();
@@ -316,7 +344,6 @@ fn active_connection_id() -> Option<String> {
             }
         }
     }
-    // Fallback: first non-loopback connection
     for line in &lines {
         let fields: Vec<&str> = line.split(':').collect();
         if fields.len() >= 4 && fields[2] != "loopback" {
@@ -345,6 +372,31 @@ fn nmcli(args: &[&str]) -> (bool, String) {
     }
 }
 
+/// Apply an arbitrary, validated DNS server list (comma separated) to the
+/// active connection, re-activating it so the change applies without reboot.
+/// Returns a human-readable status string as UTF-8.
+fn apply_ip_list(ip_csv: &str) -> String {
+    let conn = match active_connection_id() {
+        Some(c) => c,
+        None => return "aucune connexion active".to_string(),
+    };
+    let (ok, msg) = nmcli(&["con", "modify", &conn, "ipv4.dns", ip_csv]);
+    if !ok {
+        return format!("échec nmcli con modify: {}", msg);
+    }
+    let (ok2, msg2) = nmcli(&["con", "up", &conn]);
+    if !ok2 {
+        return format!("échec nmcli con up: {}", msg2);
+    }
+    std::thread::sleep(std::time::Duration::from_millis(500));
+    let (ok3, cur) = nmcli(&["--terse", "con", "show", &conn]);
+    if ok3 {
+        format!("OK — DNS appliqué. Actuel: {}", cur)
+    } else {
+        format!("OK — DNS appliqué.")
+    }
+}
+
 // ---------------------------------------------------------------------------
 // FFI surface
 // ---------------------------------------------------------------------------
@@ -354,7 +406,6 @@ pub extern "C" fn dnslib_count() -> u32 {
     RESOLVERS.len() as u32
 }
 
-/// 0=usable, 1=non-usable (no IP, e.g. DOT-only). Returns the tag char.
 #[no_mangle]
 pub extern "C" fn dnslib_name(index: u32) -> *const c_char {
     match RESOLVERS.get(index as usize) {
@@ -395,8 +446,6 @@ pub extern "C" fn dnslib_usable(index: u32) -> c_int {
     }
 }
 
-/// Release all thread-local strings. Call from the GUI thread periodically or
-/// after the window is closed.
 #[no_mangle]
 pub extern "C" fn dnslib_reset_store() {
     STORE.with(|store| {
@@ -404,7 +453,6 @@ pub extern "C" fn dnslib_reset_store() {
     });
 }
 
-/// Return the current active connection ID (or NULL if none).
 #[no_mangle]
 pub extern "C" fn dnslib_active_connection() -> *const c_char {
     match active_connection_id() {
@@ -425,11 +473,9 @@ pub extern "C" fn dnslib_current_dns() -> *const c_char {
         _ => return store(""),
     };
     let s = String::from_utf8(out.stdout).unwrap_or_default();
-    // extract lines containing "DNS Servers"
-    let mut dns = "".to_string();
+    let mut dns = String::new();
     for line in s.lines() {
         if line.contains("DNS Servers") {
-            // format: "       DNS Servers: 1.2.3.4  5.6.7.8"
             let val = line.split("DNS Servers:").nth(1).unwrap_or("");
             let cleaned: Vec<&str> = val.split_whitespace().collect();
             if !cleaned.is_empty() {
@@ -443,8 +489,8 @@ pub extern "C" fn dnslib_current_dns() -> *const c_char {
     store(&dns)
 }
 
-/// Apply the resolver at `index` to the active connection. Returns 0 on
-/// success, non-zero on failure. The result text is returned as UTF-8.
+/// Apply the resolver at `index` to the active connection (single). Returns a
+/// human-readable status string as UTF-8.
 #[no_mangle]
 pub extern "C" fn dnslib_set_dns(index: u32) -> *const c_char {
     let idx = index as usize;
@@ -454,28 +500,28 @@ pub extern "C" fn dnslib_set_dns(index: u32) -> *const c_char {
     if !r.usable {
         return store("ce résolveur n'a pas d'IP (DOT/IPv6 only)");
     }
-    let conn = match active_connection_id() {
-        Some(c) => c,
-        None => return store("aucune connexion active"),
+    store(&apply_ip_list(r.ip))
+}
+
+/// Apply a CUSTOM, user-provided, comma-separated list of DNS servers to the
+/// active connection. The list is validated (each token must be a valid IPv4
+/// or IPv6 address). Returns a human-readable status string as UTF-8.
+#[no_mangle]
+pub extern "C" fn dnslib_apply_custom(ip_csv: *const c_char) -> *const c_char {
+    let s = unsafe {
+        if ip_csv.is_null() {
+            return store("aucune liste fournie");
+        }
+        std::ffi::CStr::from_ptr(ip_csv)
+            .to_str()
+            .map(|s| s.to_string())
+            .unwrap_or_default()
     };
-    // Edit the ipv4.dns of the active connection
-    let (ok, msg) = nmcli(&["con", "modify", &conn, "ipv4.dns", r.ip]);
+    let (ok, valid, err) = parse_ip_list(&s);
     if !ok {
-        return store(&format!("échec nmcli con modify: {}", msg));
+        return store(&format!("Liste personnalisée invalide: {}", err));
     }
-    // Re-activate the connection so the change is applied without reboot.
-    let (ok2, msg2) = nmcli(&["con", "up", &conn]);
-    if !ok2 {
-        return store(&format!("échec nmcli con up: {}", msg2));
-    }
-    // A little settle, then verify
-    std::thread::sleep(std::time::Duration::from_millis(500));
-    let (ok3, cur) = nmcli(&["--terr", "-t", "con", "show", &conn]);
-    if ok3 {
-        store(&format!("OK — DNS appliqué. Actuel: {}", cur))
-    } else {
-        store("OK — DNS appliqué.")
-    }
+    store(&apply_ip_list(&valid))
 }
 
 // ---------------------------------------------------------------------------
@@ -486,9 +532,88 @@ pub extern "C" fn dnslib_set_dns(index: u32) -> *const c_char {
 fn catalogue_size() {
     assert_eq!(RESOLVERS.len(), 31);
 }
+
 #[test]
 fn all_have_names() {
     for r in RESOLVERS {
         assert!(!r.name.is_empty());
     }
+}
+
+#[test]
+fn all_usable_resolvers_have_ips() {
+    for r in RESOLVERS {
+        if r.usable {
+            let (_, _, err) = parse_ip_list(r.ip);
+            assert!(err.is_empty(), "IP non valide pour {}: {}", r.name, err);
+        }
+    }
+}
+
+#[test]
+fn parse_single_ipv4() {
+    let (ok, list, err) = parse_ip_list("8.8.8.8");
+    assert!(ok);
+    assert_eq!(list, "8.8.8.8");
+    assert!(err.is_empty());
+}
+
+#[test]
+fn parse_multi_ipv4() {
+    let (ok, list, _) = parse_ip_list("8.8.8.8, 8.8.4.4,1.1.1.1");
+    assert!(ok);
+    assert_eq!(list, "8.8.8.8,8.8.4.4,1.1.1.1");
+}
+
+#[test]
+fn parse_trailing_comma() {
+    let (ok, list, _) = parse_ip_list("1.1.1.1,");
+    assert!(ok);
+    assert_eq!(list, "1.1.1.1");
+}
+
+#[test]
+fn parse_invalid_token() {
+    let (ok, _, err) = parse_ip_list("bananafds");
+    assert!(!ok);
+    assert!(!err.is_empty());
+}
+
+#[test]
+fn parse_empty() {
+    let (ok, _, _) = parse_ip_list("");
+    assert!(!ok);
+    let (ok2, _, _) = parse_ip_list(", ,,");
+    assert!(!ok2);
+}
+
+#[test]
+fn parse_ipv6() {
+    let (ok, list, _) = parse_ip_list("262d:22:70e7::1");
+    assert!(ok);
+    assert_eq!(list, "262d:22:70e7::1");
+}
+
+#[test]
+fn parse_dedup() {
+    let (_, list, _) = parse_ip_list("1.1.1.1,1.1.1.1,1.1.1.1");
+    assert_eq!(list, "1.1.1.1");
+}
+
+#[test]
+fn parse_mixed_ipv4_ipv6() {
+    let (ok, list, _) = parse_ip_list("1.1.1.1,262d:22:70e7::1");
+    assert!(ok);
+    assert_eq!(list, "1.1.1.1,262d:22:70e7::1");
+}
+
+#[test]
+fn combined_multi_select_ip() {
+    // Simulate combining two catalogue resolvers' IP lists
+    let a = "80.67.169.12,80.67.169.40";
+    let b = "9.9.9.9,149.112.112.112";
+    let combined = format!("{},{}", a, b);
+    let (ok, list, _) = parse_ip_list(&combined);
+    assert!(ok);
+    assert_eq!(list, "80.67.169.12,80.67.169.40,9.9.9.9,149.112.112.112");
 }

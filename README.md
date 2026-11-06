@@ -8,13 +8,19 @@ connexion active sans redémarrer la distribution**.
 - **Fonctionnement** : `nmcli con modify` + `nmcli con up` sur la connexion
   active détectée via le route par défaut (`ip route show default`).
 
-## Catalogue intégrée
+## Fonctionnalités
 
-31 résolveurs DNS issus de la page
-[« Résolveurs DNS Alternatifs »](https://sebsauvage.net/wiki/doku.php?id=dns-alternatifs)
-(FDN, dns.sb, DNSForge, Mullvad, DNS4All, LibreDNS, Quad9, ControlD,
-AdGuard, CloudFlare, Google, OpenDNS, NextDNS…), avec indication du type
-de filtrage (☀️ aucun, 💵 pubs, 👿 malware, 💋 adulte, 👮 non-neutre).
+- **Sélection multiple** : choisir plusieurs résolveurs du catalogue avant
+  de valider ; la liste d'IP est combinée et appliquée d'un seul coup.
+- **DNS personnalisés** : saisir une liste d'IP IPv4/IPv6 (séparées par des
+  virgules) pour un résolveur hors catalogue.
+- **Validation** : chaque token est validé (IPv4/IPv6). Les listes
+  invalides sont rejetées avec un message d'erreur.
+- **Catalogue** : 31 résolveurs DNS issus de la page
+  [« Résolveurs DNS Alternatifs »](https://sebsauvage.net/wiki/doku.php?id=dns-alternatifs)
+  (FDN, dns.sb, DNSForge, Mullvad, DNS4All, LibreDNS, Quad9, ControlD,
+  AdGuard, CloudFlare, Google, OpenDNS, NextDNS…), avec indication du type
+  de filtrage (☀️ aucun, 💵 pubs, 👿 malware, 💋 adulte, 👮 non-neutre).
 
 ## Compilation
 
@@ -29,6 +35,20 @@ cmake .. && make
 ```
 
 Dépendances : `rust`, `cargo`, `cmake`, `ninja`, `qt6-qtbase-devel`.
+
+## Tests
+
+Les tests unitaires sont intégrés au noyau Rust :
+
+```bash
+cd rust && cargo test
+```
+
+12 tests couvrant : taille du catalogue, intégrité des entrées, parsing des
+listes d'IP (IPv4/IPv6, multi, dédup, rejet des tokens invalides, etc.).
+
+Les tests de régression FFI (`test/test_fi.c`) valident l'application
+réelle des DNS via `nmcli`.
 
 ## RPM
 
