@@ -111,13 +111,6 @@ const RESOLVERS: &[Resolver] = &[
         usable: true,
     },
     Resolver {
-        name: "LibreDNS.gr-Ads",
-        tag: "👿💵",
-        ip: "",
-        notes: "Collectif. Blocage pubs/trackers (liste StevenBlack). Sans IP listée.",
-        usable: false,
-    },
-    Resolver {
         name: "Quad9",
         tag: "👮‍♂️👿",
         ip: "9.9.9.9,149.112.112.112",
@@ -159,20 +152,7 @@ const RESOLVERS: &[Resolver] = &[
         notes: "Allemagne. Aucun filtrage.",
         usable: true,
     },
-    Resolver {
-        name: "bortzmeyer.fr",
-        tag: "☀️",
-        ip: "",
-        notes: "Individu, France. Aucun filtrage. Sans IP listée (DOT).",
-        usable: false,
-    },
-    Resolver {
-        name: "ShaftInc.fr",
-        tag: "☀️",
-        ip: "",
-        notes: "Individu, France. Sans IP listée. Accessible uniquement en IPv6.",
-        usable: false,
-    },
+
     Resolver {
         name: "AdGuard-unfiltered",
         tag: "☀️",
@@ -530,7 +510,7 @@ pub extern "C" fn dnslib_apply_custom(ip_csv: *const c_char) -> *const c_char {
 
 #[test]
 fn catalogue_size() {
-    assert_eq!(RESOLVERS.len(), 31);
+    assert_eq!(RESOLVERS.len(), 28);
 }
 
 #[test]

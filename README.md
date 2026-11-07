@@ -10,13 +10,14 @@ connexion active sans redémarrer la distribution**.
 
 ## Fonctionnalités
 
-- **Sélection multiple** : choisir plusieurs résolveurs du catalogue avant
-  de valider ; la liste d'IP est combinée et appliquée d'un seul coup.
+- **Cases à cocher** : chaque résolveur du catalogue est une case à cocher
+  ; cocher plusieurs résolveurs puis valider combine leurs IP en une liste
+  unique appliquée d'un seul coup.
 - **DNS personnalisés** : saisir une liste d'IP IPv4/IPv6 (séparées par des
   virgules) pour un résolveur hors catalogue.
 - **Validation** : chaque token est validé (IPv4/IPv6). Les listes
   invalides sont rejetées avec un message d'erreur.
-- **Catalogue** : 31 résolveurs DNS issus de la page
+- **Catalogue** : 28 résolveurs DNS issus de la page
   [« Résolveurs DNS Alternatifs »](https://sebsauvage.net/wiki/doku.php?id=dns-alternatifs)
   (FDN, dns.sb, DNSForge, Mullvad, DNS4All, LibreDNS, Quad9, ControlD,
   AdGuard, CloudFlare, Google, OpenDNS, NextDNS…), avec indication du type

@@ -1,11 +1,14 @@
 // MainWindow.h
 #pragma once
 #include <QMainWindow>
-#include <QListWidget>
+#include <QCheckBox>
 #include <QLabel>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QLineEdit>
+#include <QTextEdit>
+#include <QScrollArea>
+#include <QGroupBox>
 #include <QStatusBar>
 
 extern "C" {
@@ -31,4 +34,9 @@ class MainWindow : public QMainWindow
 public:
     MainWindow();
     ~MainWindow();
+
+private:
+    QList<QCheckBox*>  boxes;   // cases à cocher des résolveurs
+    QTextEdit*         customEdit = nullptr;
+    QLabel*            status = nullptr;
 };

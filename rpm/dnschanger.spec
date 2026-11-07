@@ -1,4 +1,4 @@
-%global ver 0.1.1
+%global ver 0.1.2
 Name:    dnschanger
 Version: %{ver}
 Release: 1%{?dist}
@@ -13,7 +13,7 @@ Requires:      qt6-qtbase, NetworkManager
 %description
 Application de bureau (KDE / Plasma) permettant de changer les DNS de la
 connexion active sans redémarrer la distribution. Le noyau est écrit en
-Rust, l'interface en Qt6. Le catalogue intégré contient 31 résolveurs
+Rust, l'interface en Qt6. Le catalogue intégré contient 28 résolveurs
 DNS alternatifs issus de la page « Résolveurs DNS Alternatifs » de
 sebsauvage.net.
 
@@ -42,6 +42,10 @@ install -D -m644 dnschanger.desktop \
 /usr/share/applications/dnschanger.desktop
 
 %changelog
+* Fri Nov 06 2026 doudou00666 <doudou00666@users.noreply.github.com> - 0.1.2-1
+- GUI : sélection des résolveurs via cases à cocher (checkboxes)
+- Suppression de 3 entrées sans IP listée (LibreDNS.gr-Ads, bortzmeyer.fr, ShaftInc.fr)
+- Catalogue : 28 résolveurs
 * Fri Nov 06 2026 doudou00666 <doudou00666@users.noreply.github.com> - 0.1.1-1
 - Sélection multiple de résolveurs avant validation (liste combinée)
 - DNS personnalisés (IPv4/IPv6, liste séparée par des virgules)
