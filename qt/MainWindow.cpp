@@ -68,7 +68,9 @@ MainWindow::MainWindow() {
 
     status = new QLabel;
     status->setWordWrap(true);
-    status->setStyleSheet("color: #555;");
+    status->setStyleSheet(
+        "QLabel { color: #2ecc7a; font-weight: bold; font-size: 14px; padding: 6px; "
+        "background: rgba(46, 204, 122, 0.12); border: 1px solid rgba(46, 204, 122, 0.3); border-radius: 4px; }");
 
     QLabel* legend = new QLabel(
         "Légende: ☀️ aucun filtrage  💵 pubs  👿 malware  💋 adulte  👮 non-neutre");
@@ -89,6 +91,12 @@ MainWindow::MainWindow() {
     h->addStretch();
     v->addLayout(h);
     v->addWidget(status);
+
+    // ---- Version en bas à droite ---------------------------------
+    QLabel* verLabel = new QLabel("dnschanger v0.1.5");
+    verLabel->setStyleSheet("color: #888; font-size: 11px; padding: 2px;");
+    verLabel->setAlignment(Qt::AlignRight);
+    v->addWidget(verLabel, 0, Qt::AlignRight);
 
     QWidget* cw = new QWidget;
     cw->setLayout(v);
@@ -127,7 +135,6 @@ MainWindow::MainWindow() {
         }
 
         btn->setEnabled(false);
-        statusBar()->showMessage("Application en cours…");
 
         const QString joined = merged.join(",");
         const char* cptr = joined.toUtf8().constData();

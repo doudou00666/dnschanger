@@ -1,4 +1,4 @@
-%global ver 0.1.4
+%global ver 0.1.5
 Name:    dnschanger
 Version: %{ver}
 Release: 1%{?dist}
@@ -42,7 +42,10 @@ install -D -m644 dnschanger.desktop \
 /usr/share/applications/dnschanger.desktop
 
 %changelog
-* Fri Nov 07 2026 doudou00666 <doudou00666@users.noreply.github.com> - 0.1.4-1
+* Fri Nov 07 2026 doudou00666 <doudou00666@users.noreply.github.com> - 0.1.5-1
+- Message de validation : label statut plus visible (vert, gras, 14px, fond)
+- Suppression du message « Application en cours… » dans la barre de statut
+- Ajout de la version du programme en bas à droite
 - Message de validation : le grand bloc « connection.id / connection.uuid / … » n'est plus affiché au bas de la fenêtre (seul « OK — DNS appliqué. » est montré)
 - Suppression du popup « DNS appliqué » après validation (résultat en statut seulement)
 - GUI : sélection des résolveurs via cases à cocher (checkboxes)
