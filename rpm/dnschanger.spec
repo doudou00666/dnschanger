@@ -1,4 +1,4 @@
-%global ver 0.1.2
+%global ver 0.1.4
 Name:    dnschanger
 Version: %{ver}
 Release: 1%{?dist}
@@ -42,7 +42,9 @@ install -D -m644 dnschanger.desktop \
 /usr/share/applications/dnschanger.desktop
 
 %changelog
-* Fri Nov 06 2026 doudou00666 <doudou00666@users.noreply.github.com> - 0.1.2-1
+* Fri Nov 07 2026 doudou00666 <doudou00666@users.noreply.github.com> - 0.1.4-1
+- Message de validation : le grand bloc « connection.id / connection.uuid / … » n'est plus affiché au bas de la fenêtre (seul « OK — DNS appliqué. » est montré)
+- Suppression du popup « DNS appliqué » après validation (résultat en statut seulement)
 - GUI : sélection des résolveurs via cases à cocher (checkboxes)
 - Suppression de 3 entrées sans IP listée (LibreDNS.gr-Ads, bortzmeyer.fr, ShaftInc.fr)
 - Catalogue : 28 résolveurs

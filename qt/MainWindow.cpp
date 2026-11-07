@@ -133,8 +133,7 @@ MainWindow::MainWindow() {
         const char* cptr = joined.toUtf8().constData();
         const QString res = q(dnslib_apply_custom(cptr));
 
-        statusBar()->showMessage(res);
-        QMessageBox::information(this, "DNS appliqué", res + "\n\nListe appliquée:\n" + joined);
+        status->setText(res);
         btn->setEnabled(true);
 
         connLabel->setText("Connexion active: " + q(dnslib_active_connection()));

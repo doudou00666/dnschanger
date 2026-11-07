@@ -369,12 +369,7 @@ fn apply_ip_list(ip_csv: &str) -> String {
         return format!("échec nmcli con up: {}", msg2);
     }
     std::thread::sleep(std::time::Duration::from_millis(500));
-    let (ok3, cur) = nmcli(&["--terse", "con", "show", &conn]);
-    if ok3 {
-        format!("OK — DNS appliqué. Actuel: {}", cur)
-    } else {
-        format!("OK — DNS appliqué.")
-    }
+    "OK — DNS appliqué.".to_string()
 }
 
 // ---------------------------------------------------------------------------
