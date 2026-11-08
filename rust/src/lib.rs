@@ -372,6 +372,27 @@ fn apply_ip_list(ip_csv: &str) -> String {
     "OK — DNS appliqué.".to_string()
 }
 
+/// Reset the active connection's DNS to its default (empty = DHCP/auto).
+/// Equivalent to applying no DNS at all. Returns a human-readable status
+/// string as UTF-8.
+fn reset_dns() -> String {
+    let conn = match active_connection_id() {
+        Some(c) => c,
+        None => return "aucune connexion active".to_string(),
+    };
+    // An empty string clears the ipv4.dns field
+    let (ok, msg) = nmcli(&["con", "modify", &conn, "ipv4.dns", ""]);
+    if !ok {
+        return format!("échec nmcli con modify: {}", msg);
+    }
+    let (ok2, msg2) = nmcli(&["con", "up", &conn]);
+    if !ok2 {
+        return format!("échec nmcli con up: {}", msg2);
+    }
+    std::thread::sleep(std::time::Duration::from_millis(500));
+    "OK — DNS réinitialisé à la configuration par défaut.".to_string()
+}
+
 // ---------------------------------------------------------------------------
 // FFI surface
 // ---------------------------------------------------------------------------
@@ -497,6 +518,14 @@ pub extern "C" fn dnslib_apply_custom(ip_csv: *const c_char) -> *const c_char {
         return store(&format!("Liste personnalisée invalide: {}", err));
     }
     store(&apply_ip_list(&valid))
+}
+
+/// Reset the active connection's DNS: clear the ipv4.dns field so it falls
+/// back to DHCP / autoconfig. Returns a human-readable status string as
+/// UTF-8.
+#[no_mangle]
+pub extern "C" fn dnslib_reset_dns() -> *const c_char {
+    store(&reset_dns())
 }
 
 // ---------------------------------------------------------------------------

@@ -66,6 +66,13 @@ MainWindow::MainWindow() {
     QPushButton* btnClear = new QPushButton("Tout décocher");
     btnClear->setStyleSheet("QPushButton { padding: 4px; }");
 
+    QPushButton* btnReset = new QPushButton("Reset DNS");
+    btnReset->setStyleSheet(
+        "QPushButton { background: #e67e22; color: white; padding: 8px; font-weight: bold; }"
+        "QPushButton:hover { background: #d35400; }"
+        "QPushButton:disabled { background: #888; }");
+    btnReset->setToolTip("Réinitialise le DNS de la carte réseau à la configuration par défaut (DHCP).");
+
     status = new QLabel;
     status->setWordWrap(true);
     status->setStyleSheet(
@@ -88,12 +95,13 @@ MainWindow::MainWindow() {
     QHBoxLayout* h = new QHBoxLayout;
     h->addWidget(btn);
     h->addWidget(btnClear);
+    h->addWidget(btnReset);
     h->addStretch();
     v->addLayout(h);
     v->addWidget(status);
 
     // ---- Version en bas à droite ---------------------------------
-    QLabel* verLabel = new QLabel("dnschanger v0.1.5");
+    QLabel* verLabel = new QLabel("dnschanger v0.1.6");
     verLabel->setStyleSheet("color: #888; font-size: 11px; padding: 2px;");
     verLabel->setAlignment(Qt::AlignRight);
     v->addWidget(verLabel, 0, Qt::AlignRight);
@@ -151,6 +159,15 @@ MainWindow::MainWindow() {
     QObject::connect(btnClear, &QPushButton::clicked, [this] {
         for (QCheckBox* cb : boxes) cb->setChecked(false);
         customEdit->clear();
+    });
+
+    QObject::connect(btnReset, &QPushButton::clicked, [this, btnReset, connLabel, dnsLabel] {
+        btnReset->setEnabled(false);
+        const QString res = q(dnslib_reset_dns());
+        status->setText(res);
+        btnReset->setEnabled(true);
+        connLabel->setText("Connexion active: " + q(dnslib_active_connection()));
+        dnsLabel->setText("DNS actuellement appliqué: " + q(dnslib_current_dns()));
     });
 
     // Compteur dynamique — met à jour le texte de statut quand on coche/décoche

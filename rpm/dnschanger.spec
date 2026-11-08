@@ -1,4 +1,4 @@
-%global ver 0.1.5
+%global ver 0.1.6
 Name:    dnschanger
 Version: %{ver}
 Release: 1%{?dist}
@@ -42,7 +42,9 @@ install -D -m644 dnschanger.desktop \
 /usr/share/applications/dnschanger.desktop
 
 %changelog
-* Fri Nov 07 2026 doudou00666 <doudou00666@users.noreply.github.com> - 0.1.5-1
+* Fri Nov 07 2026 doudou00666 <doudou00666@users.noreply.github.com> - 0.1.6-1
+- Ajout du bouton « Reset DNS » : enlève tous les DNS config manuellement et remet la config par défaut (DHCP/auto)
+- Nouvelle fonction FFI : dnslib_reset_dns()
 - Message de validation : label statut plus visible (vert, gras, 14px, fond)
 - Suppression du message « Application en cours… » dans la barre de statut
 - Ajout de la version du programme en bas à droite

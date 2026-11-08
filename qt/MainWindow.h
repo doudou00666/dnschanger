@@ -22,6 +22,7 @@ extern "C" {
     extern const char*    dnslib_active_connection();
     extern const char*    dnslib_current_dns();
     extern const char*    dnslib_apply_custom(const char* ip_csv);
+    extern const char*    dnslib_reset_dns();
 }
 
 inline QString q(const char* s) {
