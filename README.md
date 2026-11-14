@@ -1,5 +1,7 @@
 # dnschanger
 
+![dnschanger — GUI KDE avec drapeaux des nationalités](images/dnschanger-v0.1.11.jpg)
+
 Application de bureau (KDE / Plasma) permettant de **changer les DNS de la
 connexion active sans redémarrer la distribution**.
 
