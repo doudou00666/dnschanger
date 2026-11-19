@@ -72,6 +72,4 @@ tar czf ~/rpmbuild/SOURCES/dnschanger-%version.tar.gz -C . .
 rpmbuild -D 'dist ' rpm/dnschanger.spec   # le tarball doit correspondre au Source:
 ```
 
-## Licence
 
-GPL-3.0 (voir `LICENSE`).
