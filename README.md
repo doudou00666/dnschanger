@@ -1,5 +1,8 @@
 # dnschanger
 
+![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightblue?style=flat)
+
+
 ![dnschanger — GUI KDE avec drapeaux des nationalités](images/dnschanger-v0.1.11.jpg)
 
 Application de bureau (KDE / Plasma) permettant de **changer les DNS de la
